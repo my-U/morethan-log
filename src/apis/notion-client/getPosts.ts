@@ -45,6 +45,7 @@ export const getPosts = async () => {
         (block[id].value?.format as any)?.page_full_width ?? false
 
       data.push(properties)
+      console.log("DEBUG post:", properties.slug, properties.id, properties.type, properties.status)
     }
 
     // Sort by date
