@@ -13,16 +13,17 @@ import { TPosts } from "src/types"
 // TODO: react query를 사용해서 처음 불러온 뒤로는 해당데이터만 사용하도록 수정
 export const getPosts = async () => {
   let id = CONFIG.notionConfig.pageId as string
-  console.log("DEBUG: Current Notion Page ID is:", id) // 이 로그를 추가하여 Vercel Build Log에서 확인
   const api = new NotionAPI()
 
   const response = await api.getPage(id)
   id = idToUuid(id)
-  const collection = Object.values(response.collection)[0]?.value
+  const collectionEntry = Object.values(response.collection)[0] as any
+  const collection = collectionEntry?.value?.value ?? collectionEntry?.value ?? collectionEntry
   const block = response.block
-  const schema = collection?.schema
+  const schema = (collection as any)?.schema
 
-  const rawMetadata = block[id].value
+  const rawBlock = block[id] as any
+  const rawMetadata = rawBlock?.value?.value ?? rawBlock?.value ?? rawBlock
 
   // Check Type
   if (
@@ -38,14 +39,12 @@ export const getPosts = async () => {
       const id = pageIds[i]
       const properties = (await getPageProperties(id, block, schema)) || null
       // Add fullwidth, createdtime to properties
-      properties.createdTime = new Date(
-        block[id].value?.created_time
-      ).toString()
-      properties.fullWidth =
-        (block[id].value?.format as any)?.page_full_width ?? false
+      const b = block[id] as any
+      const bValue = b?.value?.value ?? b?.value ?? b
+      properties.createdTime = new Date(bValue?.created_time).toString()
+      properties.fullWidth = bValue?.format?.page_full_width ?? false
 
       data.push(properties)
-      console.log("DEBUG post:", properties.slug, properties.id, properties.type, properties.status)
     }
 
     // Sort by date
